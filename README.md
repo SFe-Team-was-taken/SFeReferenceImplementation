@@ -1,3 +1,13 @@
+# SFe Reference Implementation
+
+A reference implementation for the SF-enhanced format based on SpessaSynth.
+
+We will only PR to SpessaSynth once the additional code for SFe-specific features is sufficiently stable.
+
+Original SpessaSynth information below:
+
+---
+
 <!--suppress HtmlDeprecatedAttribute, HtmlRequiredAltAttribute, HtmlExtraClosingTag -->
 <p align='center'>
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
