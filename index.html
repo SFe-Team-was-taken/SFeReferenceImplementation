@@ -7,33 +7,33 @@
     <meta content='width=device-width, initial-scale=1.0' name='viewport'>
 
     <!-- open graph -->
-    <meta content='SpessaSynth MIDI SF2 and DLS Synthesizer' property='og:title' />
-    <meta content='SpessaSynth' property='og:site_name' />
-    <meta content='SoundFont2 synthesizer and MIDI player/editor that runs in your browser' property='og:description' />
+    <meta content='SpessaSynth MIDI SF2 and DLS Synthesizer (SFe reference implementation)' property='og:title' />
+    <meta content='SpessaSynth (SFe)' property='og:site_name' />
+    <meta content='SoundFont2 and SFe synthesizer and MIDI player/editor that runs in your browser' property='og:description' />
     <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
           property='og:image' />
     <meta content='Colorful notes falling on a piano' property='og:image:alt' />
     <meta content='1920' property='og:image:width' />
     <meta content='1080' property='og:image:height' />
-    <meta content='https://spessasus.github.io/SpessaSynth/' property='og:url' />
+    <meta content='https://github.com/SFe-Team-was-taken/SFeReferenceImplementation/' property='og:url' />
     <meta content='website' property='og:type' />
 
     <!-- twitter card -->
     <meta content='summary_large_image' name='twitter:card'>
-    <meta content='SpessaSynth MIDI Synthesizer' name='twitter:title'>
-    <meta content='SoundFont2 synthesizer and MIDI player/editor that runs in your browser' name='twitter:description'>
+    <meta content='SpessaSynth MIDI Synthesizer (SFe)' name='twitter:title'>
+    <meta content='SoundFont2 and SFe synthesizer and MIDI player/editor that runs in your browser' name='twitter:description'>
     <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
           name='twitter:image'>
     <!-- for search engines -->
     <meta
-        content='SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites. It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online!'
+        content='SpessaSynth is a powerful MIDI Player and SoundFont2 / SFe / DLS Synthesizer with MIDI editing capabilites. It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online!'
         name='description' />
     <meta content='spessasus' name='author' />
     <meta
-        content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi, soundfont player, midi soundfont player online, dls to sf2, dls to sf2 converter'
+        content='midi, soundfont, sf2, synth, synthesizer, soundfont2, sfe, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi, soundfont player, sfe player, midi soundfont player online, midi sfe player online, dls to sf2, dls to sf2 converter'
         name='keywords' />
 
-    <title>SpessaSynth SoundFont/DLS MIDI Player Online</title>
+    <title>SpessaSynth SoundFont/SFe/DLS MIDI Player Online</title>
     <link as='style' href='src/website/minified/style.min.css' rel='preload'>
     <link href='src/website/minified/demo_main.min.js' rel='modulepreload'>
 
@@ -89,7 +89,7 @@
 
         <div id='title_wrapper'>
             <div id='progress_bar'></div>
-            <h1 id='title' translate-path='locale.demoTitleMessage'>SpessaSynth: Online Demo</h1>
+            <h1 id='title' translate-path='locale.demoTitleMessage'>SpessaSynth: Online Demo (SFe)</h1>
             <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
 
             <div class='midi_and_sf_controller'>
@@ -103,7 +103,7 @@
 
                 <label id='sf_upload'> <span
                     translate-path='locale.demoSoundfontUploadButton'>Upload the soundfont</span>
-                    <input accept='.sf2,.sf3,.sfogg,.dls' id='sf_file_input' type='file'><br />
+                    <input accept='.sf2,.sf3,.sf4,.sfogg,.dls' id='sf_file_input' type='file'><br />
                 </label>
 
                 <label id='demo_download_button' style='color: yellowgreen;' translate-path='locale.demoDownload.main'>
