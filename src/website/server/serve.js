@@ -46,10 +46,11 @@ export async function serveSfont(path, res)
 function isSoundFont(name)
 {
     const fName = name.toLowerCase();
-    return fName.slice(-3) === "sf2" ||
-        fName.slice(-3) === "sf3" ||
-        fName.slice(-5) === "sfogg" ||
-        fName.slice(-3) === "dls";
+    return fName.slice(-3) === "sf2" || /* Legacy SF2.0x */
+        fName.slice(-3) === "sf3" || /* WernerSF3 */
+        fName.slice(-3) === "sf4" || /* SFe 4 */
+        fName.slice(-5) === "sfogg" || /* Legacy SF2.0x with sfogg */
+        fName.slice(-3) === "dls"; /* DLS */
 }
 
 /**
@@ -101,10 +102,11 @@ export function serveStaticFile(res, filePath, mimeType = undefined)
 {
     filePath = decodeURIComponent(filePath);
     if (
-        filePath.toLowerCase().endsWith(".sf3") ||
-        filePath.toLowerCase().endsWith(".sf2") ||
-        filePath.toLowerCase().endsWith(".sfogg") ||
-        filePath.toLowerCase().endsWith(".dls")
+        filePath.toLowerCase().endsWith(".sf3") || /* WernerSF3 */
+        filePath.toLowerCase().endsWith(".sf2") || /* Legacy SF2.0x */
+        filePath.toLowerCase().endsWith(".sf4") || /* SFe 4 */
+        filePath.toLowerCase().endsWith(".sfogg") || /* Legacy SF2.0x with sfogg */
+        filePath.toLowerCase().endsWith(".dls") /* DLS */
     )
     {
         filePath = path.join(path.dirname(filePath), "../soundfonts", path.basename(filePath));

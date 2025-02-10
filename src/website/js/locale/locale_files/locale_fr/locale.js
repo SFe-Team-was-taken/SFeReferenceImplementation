@@ -41,7 +41,7 @@ export const localeFrench = {
     dropPrompt: "Relâchez les fichiers ici...",
     
     warnings: {
-        outOfMemory: "Votre navigateur est à cours de mémoire. L'usage de Firefox ou des banques de sons au format SF3 est recommandé (voir la console pour plus de détails concernant l'erreur).",
+        outOfMemory: "Votre navigateur est à cours de mémoire. L'usage de Firefox ou des banques de sons compressés est recommandé (voir la console pour plus de détails concernant l'erreur).",
         noMidiSupport: "Aucun port MIDI détecté, cette fonctionnalité sera désactivée.",
         chromeMobile: "Les performances de SpessaSynth sont basses sur Chrome pour mobile. L'usage de Firefox est recommandé.",
         warning: "Attention"

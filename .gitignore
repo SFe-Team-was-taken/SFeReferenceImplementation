@@ -67,3 +67,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Bat file
+Open SpessaSynth.bat

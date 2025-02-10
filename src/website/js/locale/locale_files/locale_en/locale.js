@@ -48,7 +48,7 @@ export const localeEnglish = {
     dropPrompt: "Drop files here...",
     
     warnings: {
-        outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead. (see console for error).",
+        outOfMemory: "Your browser ran out of memory. Consider using Firefox or a compressed sound bank instead. (see console for error).",
         noMidiSupport: "No MIDI ports detected, this functionality will be disabled.",
         chromeMobile: "SpessaSynth performs poorly on Chrome Mobile. Consider using Firefox Android instead.",
         warning: "Warning"

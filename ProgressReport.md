@@ -2,18 +2,21 @@
 
 Some of the numbers may be arbitrary.
 
-### Total progress: 1%
+### Total progress: 4%
 
 ### Section 5
 
-- [ ] 5.1 File format extensions: 10% complete
+- [x] 5.1 File format extensions
     - The index files provided now accept .sf4.
-    - No other implementation has been done
-- [ ] 5.3 Chunk header types: Not started
+    - No other implementation of the SFe format has been completed.
+- [ ] 5.2 RIFF-type format structures: Not started
+    - Not started
+- [ ] 5.3 Chunk header types: 10% complete
+    - Detects `sfen` header and gives error ("stub"), because 64-bit headers aren't yet supported.
     - 64-bit development not started
     - RIFX not immediately supported
-- [ ] 5.5.4 String encoding: Progress unclear
-    - UTF-8 may or may not currently be usable
+- [ ] 5.5.4 String encoding: Not started
+    - UTF-8 is not usable in `ICMT`.
 - [ ] 5.6.1 ifil handling: Not started
     - Not started
 - [ ] 5.6.4 isng handling: Not started

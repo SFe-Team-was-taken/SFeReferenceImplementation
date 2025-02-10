@@ -47,10 +47,13 @@ export class SoundFont2 extends BasicSoundFont
         this.verifyHeader(firstChunk, "riff");
         
         const type = readBytesAsString(this.dataArray, 4).toLowerCase();
-        if (type !== "sfbk" && type !== "sfpk")
+        if (type !== "sfbk" && type !== "sfpk" && type !== "sfen")
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid soundFont! Expected "sfbk" or "sfpk" got "${type}"`);
+            throw new SyntaxError(`Invalid soundFont! Expected "sfbk", "sfpk" or "sfen" got "${type}"`);
+        } else if (type === "sfen") {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`SFe banks with 64-bit headers are unsupported!`);
         }
         /*
         Some SF2Pack description:
@@ -58,7 +61,11 @@ export class SoundFont2 extends BasicSoundFont
         and the only other difference is that the main chunk isn't "sfbk" but rather "sfpk"
          */
         const isSF2Pack = type === "sfpk";
-        
+        /*
+        SFe with 64-bit static or dynamic chunk headers (later) uses an "sfen" main chunk instead of "sfbk".
+        */
+        const isSFe64 = type === "sfen";
+
         // INFO
         let infoChunk = readRIFFChunk(this.dataArray);
         this.verifyHeader(infoChunk, "list");
@@ -71,7 +78,7 @@ export class SoundFont2 extends BasicSoundFont
             // special cases
             switch (chunk.header.toLowerCase())
             {
-                case  "ifil":
+                case "ifil":
                 case "iver":
                     text = `${readLittleEndian(chunk.chunkData, 2)}.${readLittleEndian(chunk.chunkData, 2)}`;
                     this.soundFontInfo[chunk.header] = text;
