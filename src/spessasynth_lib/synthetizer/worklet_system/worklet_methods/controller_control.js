@@ -1,6 +1,6 @@
 import { consoleColors } from "../../../utils/other.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
-import { channelConfiguration, getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
+import { channelConfiguration, getBankSelect, setBankSelect, setBankSelectMSB, setBankSelectLSB } from "../worklet_utilities/worklet_processor_channel.js";
 import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { SYNTHESIZER_GAIN } from "../main_processor.js";
@@ -118,26 +118,12 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                 }
             }
             
-            setBankSelect(channelObject, bankNr);
+            setBankSelectMSB(channelObject, bankNr);
             break;
         
         case midiControllers.lsbForControl0BankSelect:
-            if (this.system === "xg")
-            {
-                if (!channelObject.drumChannel)
-                {
-                    // some soundfonts use 127 as drums and
-                    // if it's not marked as drums by bank MSB (line 47), then we DO NOT want the drums!
-                    if (controllerValue !== 127)
-                    {
-                        setBankSelect(channelObject, controllerValue);
-                    }
-                }
-            }
-            else if (this.system === "gm2")
-            {
-                setBankSelect(channelObject, controllerValue);
-            }
+            let bankLsb = controllerValue;
+            setBankSelectLSB(channelObject, bankLsb);
             break;
         
         // check for RPN and NPRN and data entry

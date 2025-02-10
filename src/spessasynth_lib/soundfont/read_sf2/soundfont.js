@@ -17,13 +17,13 @@ import { Modulator } from "../basic_soundfont/modulator.js";
 
 /**
  * soundfont.js
- * purpose: parses a soundfont2 file
+ * purpose: parses a soundfont2 (or sfe) file
  */
 
 export class SoundFont2 extends BasicSoundFont
 {
     /**
-     * Initializes a new SoundFont2 Parser and parses the given data array
+     * Initializes a new SoundFont2/SFe Parser and parses the given data array
      * @param arrayBuffer {ArrayBuffer}
      * @param warnDeprecated {boolean}
      */
@@ -75,13 +75,27 @@ export class SoundFont2 extends BasicSoundFont
         {
             let chunk = readRIFFChunk(infoChunk.chunkData);
             let text;
+            let verMaj;
+            let verMin;
+            let listData;
             // special cases
             switch (chunk.header.toLowerCase())
             {
                 case "ifil":
                 case "iver":
-                    text = `${readLittleEndian(chunk.chunkData, 2)}.${readLittleEndian(chunk.chunkData, 2)}`;
-                    this.soundFontInfo[chunk.header] = text;
+                    verMaj = readLittleEndian(chunk.chunkData, 2);
+                    verMin = readLittleEndian(chunk.chunkData, 2);
+                    this.soundFontInfo[chunk.header + `.verMaj`] = verMaj;
+                    this.soundFontInfo[chunk.header + `.verMin`] = verMin;
+
+                    if (this.soundFontInfo["ifil.verMin"] >= 1024)
+                    { 
+                        SpessaSynthInfo(
+                            "%cSFe bank detected, decoding ISFe chunk...",
+                            consoleColors.info
+                        );
+                    }
+
                     break;
                 
                 case "icmt":
@@ -104,19 +118,37 @@ export class SoundFont2 extends BasicSoundFont
                     ))));
                     this.soundFontInfo[chunk.header] = chunk.chunkData;
                     break;
-                
+                case "list":
+
                 default:
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
                     this.soundFontInfo[chunk.header] = text;
             }
-            
-            SpessaSynthInfo(
-                `%c"${chunk.header}": %c"${text}"`,
-                consoleColors.info,
-                consoleColors.recognized
-            );
+            switch (chunk.header)
+            {
+                case "ifil":
+                case "iver":
+                    SpessaSynthInfo(
+                        `%c"${chunk.header + `.verMaj`}": %c"${verMaj}"`,
+                        consoleColors.info,
+                        consoleColors.recognized
+                    );
+                    SpessaSynthInfo(
+                        `%c"${chunk.header + `.verMin`}": %c"${verMin}"`,
+                        consoleColors.info,
+                        consoleColors.recognized
+                    );
+                    break;
+
+                default:
+                    SpessaSynthInfo(
+                        `%c"${chunk.header}": %c"${text}"`,
+                        consoleColors.info,
+                        consoleColors.recognized
+                    );
+            }
         }
-        
+
         // SDTA
         const sdtaChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sdtaChunk, "list");

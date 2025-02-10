@@ -12,7 +12,7 @@ import { closeNotification } from "../notification/notification.js";
 export const LOCALE_PATH = "locale.synthesizerController.";
 
 /**
- * synthesizer_ui.js
+ * synthetizer_ui.js
  * purpose: manages the graphical user interface for the synthesizer
  */
 

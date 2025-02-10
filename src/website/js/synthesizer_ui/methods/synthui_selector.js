@@ -308,14 +308,19 @@ export class Selector
                 {
                     const headerRow = document.createElement("tr");
                     const header = document.createElement("th");
-                    header.colSpan = "3";
+                    header.colSpan = "4";
                     header.textContent = midiPatchNames[lastProgram];
                     headerRow.appendChild(header);
                     table.appendChild(headerRow);
                 }
             }
             const programText = `${preset.program.toString().padStart(3, "0")}`;
-            const bankText = `${preset.bank.toString().padStart(3, "0")}`;
+
+            const bankMSB = preset.bank & 255;
+            const bankLSB = preset.bank >>> 8;
+
+            const bankTextMSB = `${bankMSB.toString().padStart(3, "0")}`;
+            const bankTextLSB = `${bankLSB.toString().padStart(3, "0")}`;
             
             const presetName = document.createElement("td");
             presetName.classList.add("voice_selector_preset_name");
@@ -325,11 +330,16 @@ export class Selector
             presetName.classList.add("voice_selector_preset_program");
             presetProgram.textContent = programText;
             
-            const presetBank = document.createElement("td");
+            const presetBankMSB = document.createElement("td");
             presetName.classList.add("voice_selector_preset_program");
-            presetBank.textContent = bankText;
+            presetBankMSB.textContent = bankTextMSB;
+
+            const presetBankLSB = document.createElement("td");
+            presetName.classList.add("voice_selector_preset_program");
+            presetBankLSB.textContent = bankTextLSB;
             
-            row.appendChild(presetBank);
+            row.appendChild(presetBankMSB);
+            row.appendChild(presetBankLSB);
             row.appendChild(presetProgram);
             row.appendChild(presetName);
             table.appendChild(row);

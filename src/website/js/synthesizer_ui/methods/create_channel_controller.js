@@ -218,8 +218,11 @@ export function createChannelController(channelNumber)
         async presetName =>
         {
             const data = presetName.split(":");
+            const bankMSB = parseInt(data[0]) & 255;
+            const bankLSB = parseInt(data[0]) >>> 8;
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
-            this.synth.controllerChange(channelNumber, midiControllers.bankSelect, parseInt(data[0]), true);
+            this.synth.controllerChange(channelNumber, midiControllers.bankSelect, bankMSB, true);
+            this.synth.controllerChange(channelNumber, midiControllers.lsbForControl0BankSelect, bankLSB, true);
             this.synth.programChange(channelNumber, parseInt(data[1]), true);
             presetSelector.mainButton.classList.add("locked_selector");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, true);

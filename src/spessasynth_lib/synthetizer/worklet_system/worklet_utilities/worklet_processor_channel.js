@@ -100,6 +100,33 @@ export function setBankSelect(channel, bank)
 
 /**
  * @param channel {WorkletProcessorChannel}
+ * @param bank {number}
+ */
+export function setBankSelectLSB(channel, bank)
+{
+    if (!channel.lockPreset)
+    {
+        let msb = channel.bank & 255;
+        channel.bank = (256 * bank) + msb;
+    }
+}
+
+/**
+ * @param channel {WorkletProcessorChannel}
+ * @param bank {number}
+ */
+export function setBankSelectMSB(channel, bank)
+{
+    if (!channel.lockPreset)
+    {
+        let lsb = channel.bank & 65280;
+        channel.bank = bank + lsb;
+    }
+}
+
+
+/**
+ * @param channel {WorkletProcessorChannel}
  * @returns {number}
  */
 export function getBankSelect(channel)

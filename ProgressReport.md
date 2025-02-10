@@ -2,7 +2,7 @@
 
 Some of the numbers may be arbitrary.
 
-### Total progress: 4%
+### Total progress: 5%
 
 ### Section 5
 
@@ -17,8 +17,9 @@ Some of the numbers may be arbitrary.
     - RIFX not immediately supported
 - [ ] 5.5.4 String encoding: Not started
     - UTF-8 is not usable in `ICMT`.
-- [ ] 5.6.1 ifil handling: Not started
-    - Not started
+- [x] 5.6.1 ifil handling
+    - Can detect a value of 1024 or above.
+    - ISFe-list handling not started yet.
 - [ ] 5.6.4 isng handling: Not started
     - Not started
 - [ ] 5.6.6 ICRD handling: Not started
@@ -41,16 +42,22 @@ Some of the numbers may be arbitrary.
     - This isn't done immediately
 - [ ] 5.7.4 8-bit samples: Not started
     - Not done immediately
-- [ ] 5.8.2 Bank select LSB: Not started
-    - Change wBank in code to byBankMSB and byBankLSB
-    - Change handling of percussion to use byte eight instead of hardcoded "128"
+- [ ] 5.8.2 Bank select LSB: 50% complete
+    - Bank select LSB works properly with all files.
+    - In the preset selection popup, bank selects are properly separated.
+    - The code still uses a unified bank value and the values need to be separated.
+    - Base preset fallback does not yet work properly for LSB values.
+    - In the channel list, the bank value is still unified.
+    - This is a reference implementation and should not include any "XG hacks".
+    - Todo: Change wBank in code to byBankMSB and byBankLSB.
+    - Todo: Change handling of percussion to use byte eight instead of hardcoded "128".
 - [ ] 5.8.5 UTF-8 in sdta: Not started
     - Not started
 
 ### Section 8
 
 - [ ] 8.1 Structurally Unsound errors: Not started
-    - Proper handling of 64-bit chunk headers (reference implementation doesn't support 32-bit immediately)
+    - Proper handling of 64-bit chunk headers (reference implementation doesn't support 64-bit immediately)
 - [ ] 8.3 Duplicated preset locations in bank: Not started
     - How does SpessaSynth handle it?
 - [ ] 8.4 Duplicated preset locations across banks: Not started
