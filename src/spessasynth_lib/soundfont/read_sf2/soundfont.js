@@ -8,7 +8,7 @@ import { readInstruments } from "./instruments.js";
 import { readModulators } from "./modulators.js";
 import { readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { consoleColors } from "../../utils/other.js";
-import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthLogging } from "../../utils/loggin.js";
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { BasicSoundFont } from "../basic_soundfont/basic_soundfont.js";
@@ -71,33 +71,53 @@ export class SoundFont2 extends BasicSoundFont
         this.verifyHeader(infoChunk, "list");
         readBytesAsString(infoChunk.chunkData, 4);
         
+        let bank_format;
+        let infoValid = false;
+        let text;
+        let flags = [];
+
         while (infoChunk.chunkData.length > infoChunk.chunkData.currentIndex)
         {
             let chunk = readRIFFChunk(infoChunk.chunkData);
-            let text;
             let verMaj;
             let verMin;
-            let listData;
+
             // special cases
             switch (chunk.header.toLowerCase())
             {
                 case "ifil":
+                    verMaj = readLittleEndian(chunk.chunkData, 2);
+                    verMin = readLittleEndian(chunk.chunkData, 2);
+                    this.soundFontInfo[chunk.header + `.verMaj`] = verMaj;
+                    this.soundFontInfo[chunk.header + `.verMin`] = verMin;
+                    if (this.soundFontInfo["ifil.verMin"] >= 1024)
+                        { 
+                            bank_format = "SFe";
+                            SpessaSynthInfo(
+                                "%cSFe bank detected.",
+                                consoleColors.info
+                            );
+                        } else if ((this.soundFontInfo["ifil.verMin"] == 4)) {
+                            bank_format = "SoundFont 2.04";
+                            infoValid = true;
+                        } else if ((this.soundFontInfo["ifil.verMin"] == 1)) {
+                            bank_format = "SoundFont 2.01";
+                            infoValid = true;
+                        } else if ((this.soundFontInfo["ifil.verMin"] == 0)) {
+                            bank_format = "SoundFont 2.00";
+                            infoValid = true;
+                        } else {
+                            bank_format = "Unknown";
+                            infoValid = true;
+                            console.warn("Unrecognised ifil version");
+                        }
+                        break;
                 case "iver":
                     verMaj = readLittleEndian(chunk.chunkData, 2);
                     verMin = readLittleEndian(chunk.chunkData, 2);
                     this.soundFontInfo[chunk.header + `.verMaj`] = verMaj;
                     this.soundFontInfo[chunk.header + `.verMin`] = verMin;
-
-                    if (this.soundFontInfo["ifil.verMin"] >= 1024)
-                    { 
-                        SpessaSynthInfo(
-                            "%cSFe bank detected, decoding ISFe chunk...",
-                            consoleColors.info
-                        );
-                    }
-
                     break;
-                
                 case "icmt":
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length, undefined, false);
                     this.soundFontInfo[chunk.header] = text;
@@ -119,12 +139,128 @@ export class SoundFont2 extends BasicSoundFont
                     this.soundFontInfo[chunk.header] = chunk.chunkData;
                     break;
                 case "list":
+                    let list_name = new IndexedByteArray(chunk.chunkData.buffer.slice(chunk.chunkData, chunk.chunkData.currentIndex + 4));
+                    let list_name_string = readBytesAsString(list_name, 4, undefined, false);
+                    // special cases
+                    switch (list_name_string.toLowerCase())
+                    {
+                        case "isfe":
+                            if (bank_format === "SFe")
+                            {
+                                SpessaSynthInfo(
+                                    "%cISFe sub-chunk detected, reading chunk...",
+                                    consoleColors.info
+                                )
+                                infoValid = true;
+                            } else {
+                                console.warn("ISFe sub-chunk detected, but ifil version corresponds to soundfont2.")
+                            }
+                        default:
+                            ;     
+                        }
+                    chunk.chunkData.currentIndex += 4;
 
+                    while (chunk.chunkData.length > chunk.chunkData.currentIndex)
+                    {
+                        let nestedChunk = readRIFFChunk(chunk.chunkData);
+                        let text;
+
+                        switch (nestedChunk.header.toLowerCase()) {
+                            case "sfty":
+                                text = readBytesAsString(nestedChunk.chunkData, nestedChunk.chunkData.length);
+                                this.soundFontInfo[nestedChunk.header] = text;
+                                if (text === "SFe-static")
+                                {
+                                    SpessaSynthInfo(
+                                        `%c"${list_name_string + `.` + nestedChunk.header}": %c"${text}"`,
+                                        consoleColors.info,
+                                        consoleColors.recognized
+                                    );
+                                } else {
+                                    SpessaSynthGroupEnd();
+                                    throw new SyntaxError(`Unsupported SFe bank type: "${text}"`);
+                                }
+                                break;
+                            case "sfvx":
+                                let sfeVerMaj = readLittleEndian(nestedChunk.chunkData, 2);
+                                if (sfeVerMaj > 4) { // To do: add a global variable declaring the highest supported internal SFe version number.
+                                    SpessaSynthGroupEnd();
+                                    throw new SyntaxError(`Unsupported SFe version found: SFe "${sfeVerMaj}"`);
+                                }
+                                let sfeVerMin = readLittleEndian(nestedChunk.chunkData, 2);
+                                if (sfeVerMaj > 0) { // To do: add a global variable declaring the highest supported internal SFe version number.
+                                    SpessaSynthGroupEnd();
+                                    throw new SyntaxError(`Unsupported SFe version found: SFe "${sfeVerMaj}"."${sfeVerMin}"`);
+                                }
+                                let sfeSpecType = readBytesAsString(nestedChunk.chunkData, 20, undefined, false);
+                                if (sfeSpecType !== "Final") {
+                                    console.warn("This SFe file was written to a draft specification.");
+                                }
+                                let sfeDraft = readLittleEndian(nestedChunk.chunkData, 2);
+                                let sfeVerStr = readBytesAsString(nestedChunk.chunkData, 20, undefined, false);
+                                this.soundFontInfo[nestedChunk.header + `.sfeVerMaj`] = sfeVerMaj;
+                                this.soundFontInfo[nestedChunk.header + `.sfeVerMin`] = sfeVerMin;
+                                this.soundFontInfo[nestedChunk.header + `.sfeSpecType`] = sfeSpecType;
+                                this.soundFontInfo[nestedChunk.header + `.sfeDraft`] = sfeDraft;
+                                this.soundFontInfo[nestedChunk.header + `.sfeVerStr`] = sfeVerStr;
+                                SpessaSynthInfo(
+                                    `%c"${list_name_string + `.` + nestedChunk.header + `.sfeVerMaj`}": %c"${sfeVerMaj}"`,
+                                    consoleColors.info,
+                                    consoleColors.recognized
+                                );
+                                SpessaSynthInfo(
+                                    `%c"${list_name_string + `.` + nestedChunk.header + `.sfeVerMin`}": %c"${sfeVerMin}"`,
+                                    consoleColors.info,
+                                    consoleColors.recognized
+                                );
+                                SpessaSynthInfo(
+                                    `%c"${list_name_string + `.` + nestedChunk.header + `.sfeSpecType`}": %c"${sfeSpecType}"`,
+                                    consoleColors.info,
+                                    consoleColors.recognized
+                                );
+                                SpessaSynthInfo(
+                                    `%c"${list_name_string + `.` + nestedChunk.header + `.sfeDraft`}": %c"${sfeDraft}"`,
+                                    consoleColors.info,
+                                    consoleColors.recognized
+                                );
+                                SpessaSynthInfo(
+                                    `%c"${list_name_string + `.` + nestedChunk.header + `.sfeVerStr`}": %c"${sfeVerStr}"`,
+                                    consoleColors.info,
+                                    consoleColors.recognized
+                                );
+                                break;
+                            case "flag":
+                                if ((nestedChunk.size % 6) != 0)
+                                {
+                                    SpessaSynthGroupEnd();
+                                    throw new SyntaxError(`Bad flag chunk size expected multiple of 6 got "${nestedChunk.size}"`);
+                                } else {
+                                    while (nestedChunk.chunkData.length > nestedChunk.chunkData.currentIndex)
+                                    {
+                                        let branch = readLittleEndian(nestedChunk.chunkData, 1);
+                                        let leaf = readLittleEndian(nestedChunk.chunkData, 1);
+                                        let flagValue = readLittleEndian(nestedChunk.chunkData, 4);
+                                        let featureFlag = [branch, leaf, flagValue];
+                                        flags.push(featureFlag);
+                                    }
+                                }
+                                break;
+                            default:
+                                text = readBytesAsString(nestedChunk.chunkData, nestedChunk.chunkData.length);
+                                this.soundFontInfo[nestedChunk.header] = text;
+        
+                                SpessaSynthInfo(
+                                    `%c"${list_name_string + `.` + nestedChunk.header}": %c"${text}"`,
+                                    consoleColors.info,
+                                    consoleColors.recognized
+                                );
+                        }
+                    }
                 default:
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
                     this.soundFontInfo[chunk.header] = text;
             }
-            switch (chunk.header)
+            switch (chunk.header.toLowerCase())
             {
                 case "ifil":
                 case "iver":
@@ -139,7 +275,8 @@ export class SoundFont2 extends BasicSoundFont
                         consoleColors.recognized
                     );
                     break;
-
+                case "list":
+                    break;
                 default:
                     SpessaSynthInfo(
                         `%c"${chunk.header}": %c"${text}"`,
@@ -147,6 +284,12 @@ export class SoundFont2 extends BasicSoundFont
                         consoleColors.recognized
                     );
             }
+        }
+
+        if (infoValid == false)
+        {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`No ISFe chunk found in SFe file.`);
         }
 
         // SDTA
@@ -309,7 +452,7 @@ export class SoundFont2 extends BasicSoundFont
             delete this.dataArray;
         }
     }
-    
+
     /**
      * @param chunk {RiffChunk}
      * @param expected {string}

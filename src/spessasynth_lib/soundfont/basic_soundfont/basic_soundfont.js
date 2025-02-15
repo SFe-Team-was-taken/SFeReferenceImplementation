@@ -18,7 +18,7 @@ class BasicSoundFont
     constructor(data = undefined)
     {
         /**
-         * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g. 2.1)
+         * Soundfont's info stored as name: value.
          * @type {Object<string, string|IndexedByteArray>}
          */
         this.soundFontInfo = {};

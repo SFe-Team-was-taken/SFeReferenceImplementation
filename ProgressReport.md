@@ -2,13 +2,12 @@
 
 Some of the numbers may be arbitrary.
 
-### Total progress: 5%
+### Total progress: 12%
 
 ### Section 5
 
 - [x] 5.1 File format extensions
-    - The index files provided now accept .sf4.
-    - No other implementation of the SFe format has been completed.
+    - SpessaSynth now accepts .sf4.
 - [ ] 5.2 RIFF-type format structures: Not started
     - Not started
 - [ ] 5.3 Chunk header types: 10% complete
@@ -27,13 +26,15 @@ Some of the numbers may be arbitrary.
     - Should a warning be shown if ICRD is non-standard?
 - [ ] 5.6.7 Other sub-chunks: Not started
     - UTF-8 support not started
-- [ ] 5.6.9 SFty sub-chunk: Not started
-    - Not started
+- [ ] 5.6.9 SFty sub-chunk: 50% complete
+    - Detects banks that use 8-bit samples or TSC and gives error if found 
     - TSC and 8-bit not supported immediately
-- [ ] 5.6.10 SFvx sub-chunk: Not started
-    - Not started
-- [ ] 5.6.11 flag sub-chunk: Not started
-    - Not started
+- [x] 5.6.10 SFvx sub-chunk
+    - Includes error handling for unsupported versions
+    - Warns user if file written to draft specification
+- [ ] 5.6.11 flag sub-chunk: 50% complete
+    - Outputs an array containing the feature flags
+    - Flag comparison code not yet started
     - Feature flag detection code should be extensible so it is easy to add new feature branches
 - [ ] 5.7.1 smpl sub-chunk: Not started
     - Not started
@@ -59,26 +60,34 @@ Some of the numbers may be arbitrary.
 - [ ] 8.1 Structurally Unsound errors: Not started
     - Proper handling of 64-bit chunk headers (reference implementation doesn't support 64-bit immediately)
 - [ ] 8.3 Duplicated preset locations in bank: Not started
-    - How does SpessaSynth handle it?
+    - Such duplicated preset locations need to also be loaded.
+    - Then, it should be possible to switch between them using the interface.
+    - A warning must be shown.
+    - This implementation is player-specific.
+    - By default, use first preset (same way as SF2.04).
 - [ ] 8.4 Duplicated preset locations across banks: Not started
-    - How does SpessaSynth handle it?
-- [ ] 8.5 Undefined chunks
-    - How does SpessaSynth handle it?
-- [ ] 8.6 Unknown enums
-    - How does SpessaSynth handle it?
-    - Test with SFCF and Viena
+    - Does this need to be implemented if we're going to replace the soundfontManager system with Banklist?
+    - In other words, should we replace soundfontManager with Banklist first?
+- [x] 8.5 Undefined chunks
+    - These are ignored already.
+- [x] 8.6 Unknown enums
+    - These are ignored already.
 
 ### Section 9
 
 - [ ] 9.2 SiliconSFe headers: Not started
     - This isn't done immediately
+    - Cacodemon feedback suggests that this can wait quite a bit.
 - [ ] 9.3 AWE ROM emulator: Not started
     - This isn't done immediately
+    - We need examples of old SF2.0x banks that used ROM samples.
+    - Once that is done, we can test the AWE ROM emulator.
+    - Reference implementation samples are already available!
 
 ### Section 11
 
 - [ ] 11.2.1 SF2-to-SFe: Not started
-    - Not started
+    - Add ability for RIFF writer to write nested LIST chunks
 - [ ] 11.2.2 SFe-to-SF2.04: Not started
     - Not started
     - Must add 24-bit support first
@@ -90,3 +99,5 @@ Some of the numbers may be arbitrary.
     - 64bit not supported yet
 - [ ] 11.3.3 32bit-to-RIFX: Not started
     - Might not be necessary(?)
+    - Despite being the case, it would be as simple as byteswapping everything to big-endian.
+    - Is it necessary to byteswap the samples to big-endian as well?
