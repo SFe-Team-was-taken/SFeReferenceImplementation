@@ -44,17 +44,15 @@ export class SoundFont2 extends BasicSoundFont
         
         // read the main read
         let firstChunk = readRIFFChunk(this.dataArray, false);
-        this.verifyHeader(firstChunk, "riff");
         
-        const type = readBytesAsString(this.dataArray, 4).toLowerCase();
-        if (type !== "sfbk" && type !== "sfpk" && type !== "sfen")
+        if (firstChunk.header.toLowerCase() !== "riff" && firstChunk.header.toLowerCase() !== "rf64")
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid soundFont! Expected "sfbk", "sfpk" or "sfen" got "${type}"`);
-        } else if (type === "sfen") {
-            SpessaSynthGroupEnd();
-            throw new SyntaxError(`SFe banks with 64-bit headers are unsupported!`);
+            this.parsingError(`Invalid chunk header! Expected "RIFF" or "RF64" got "${chunk.header.toLowerCase()}"`);
         }
+        
+        const type = readBytesAsString(this.dataArray, 4).toLowerCase();
+
         /*
         Some SF2Pack description:
         this is essentially sf2, but the entire smpl chunk is compressed (we only support ogg vorbis here)
@@ -64,7 +62,22 @@ export class SoundFont2 extends BasicSoundFont
         /*
         SFe with 64-bit static or dynamic chunk headers (later) uses an "sfen" main chunk instead of "sfbk".
         */
-        const isSFe64 = type === "sfen";
+        const isSFe64 = (type === "sfen" && firstChunk.header.toLowerCase() === "rf64");
+
+        if (type !== "sfbk" && type !== "sfpk" && type !== "sfen")
+        {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`Invalid soundFont! Expected "sfbk", "sfpk" or "sfen" got "${type}"`);
+        } else if (type === "sfen") {
+            SpessaSynthGroupEnd();
+            console.warn(`Main chunk "sfen" found. The file may be incompatible with SpessaSynth.`)
+        }
+
+        if (isSFe64)
+        {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`SFe files with 64-bit chunk headers are currently unsupported!`);
+        }
 
         // INFO
         let infoChunk = readRIFFChunk(this.dataArray);

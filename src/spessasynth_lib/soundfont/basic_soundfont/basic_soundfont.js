@@ -81,10 +81,13 @@ class BasicSoundFont
     }
     
     /**
-     * Creates a simple soundfont with one saw wave preset.
+     * Creates a simple SFe bank or soundfont with one saw wave preset.
+     * @param VerMaj {number}
+     * @param VerMin {number}
+     * @param bitDepth {number} // Bitdepth parameter is currently a stub 
      * @returns {ArrayBufferLike}
      */
-    static getDummySoundfontFile()
+    static getDummySFeFile(VerMaj = 4, VerMin = 0, bitDepth = 16)
     {
         const font = new BasicSoundFont();
         const sample = new BasicSample(
@@ -132,9 +135,40 @@ class BasicSoundFont
         preset.presetName = "Saw Wave";
         preset.presetZones.push(pZone);
         font.presets.push(preset);
-        
-        font.soundFontInfo["ifil"] = "2.1";
-        font.soundFontInfo["isng"] = "EMU8000";
+        if (VerMaj == 2 && VerMin == 1)
+        {
+            font.soundFontInfo["ifil.verMaj"] = 2;
+            font.soundFontInfo["ifil.verMin"] = 1;
+            font.soundFontInfo["isng"] = "EMU8000";
+        } else if (VerMaj == 2 && VerMin == 4)
+        {
+            font.soundFontInfo["ifil.verMaj"] = 2;
+            font.soundFontInfo["ifil.verMin"] = 4;
+            font.soundFontInfo["isng"] = "X-Fi";
+        } else if (VerMaj == 4 && VerMin == 0) { 
+            font.soundFontInfo["ifil.verMaj"] = 2;
+            font.soundFontInfo["ifil.verMin"] = 1024;
+            font.soundFontInfo["isng"] = "SFe 4";
+            font.soundFontInfo["ISFe.SFty"] = "SFe-static";
+            font.soundFontInfo["ISFe.SFvx.sfeVerMaj"] = "4"
+            font.soundFontInfo["ISFe.SFvx.sfeVerMin"] = "0"
+            font.soundFontInfo["ISFe.SFvx.sfeSpecType"] = "Final"
+            font.soundFontInfo["ISFe.SFvx.sfeDraft"] = "0"
+            font.soundFontInfo["ISFe.SFvx.sfeVerStr"] = "4.0u4"
+            // Todo: Feature flags
+            font.soundFontInfo[""]
+        } else {// Assume SFe 4
+            font.soundFontInfo["ifil.verMaj"] = 2;
+            font.soundFontInfo["ifil.verMin"] = 1024;
+            font.soundFontInfo["isng"] = "SFe 4";
+            font.soundFontInfo["ISFe.SFty"] = "SFe-static";
+            font.soundFontInfo["ISFe.SFvx.sfeVerMaj"] = "4"
+            font.soundFontInfo["ISFe.SFvx.sfeVerMin"] = "0"
+            font.soundFontInfo["ISFe.SFvx.sfeSpecType"] = "Final"
+            font.soundFontInfo["ISFe.SFvx.sfeDraft"] = "0"
+            font.soundFontInfo["ISFe.SFvx.sfeVerStr"] = "4.0u4"
+            // Todo: Feature flags
+        }
         font.soundFontInfo["INAM"] = "Dummy";
         return font.write().buffer;
     }

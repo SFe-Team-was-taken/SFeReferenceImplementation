@@ -34,8 +34,50 @@ export class RiffChunk
 export function readRIFFChunk(dataArray, readData = true, forceShift = false)
 {
     let header = readBytesAsString(dataArray, 4);
+
+    let size = readLittleEndian(dataArray, 4);
+    let chunkData = undefined;
+    if (readData)
+    {
+        chunkData = new IndexedByteArray(dataArray.buffer.slice(dataArray.currentIndex, dataArray.currentIndex + size));
+    }
+    if (readData || forceShift)
+    {
+        dataArray.currentIndex += size;
+    }
+    
+    if (size % 2 !== 0)
+    {
+        if (dataArray[dataArray.currentIndex] === 0)
+        {
+            dataArray.currentIndex++;
+        }
+    }
+    
+    return new RiffChunk(header, size, chunkData);
+}
+
+/**
+ * @param dataArray {IndexedByteArray}
+ * @param readData {boolean}
+ * @param forceShift {boolean}
+ * @returns {RiffChunk}
+ */
+export function readRF64Chunk(dataArray, readData = true, forceShift = false)
+{
+    let header = readBytesAsString(dataArray, 8);
     
     let size = readLittleEndian(dataArray, 4);
+
+    if (size != -1) // ckSize (always 4,294,967,295 in RIFF64)
+    {
+        console.error(`RIFF64 chunk corrupted, expected size 4294967295 got "${size}" instead`);
+        return new RiffChunk(header, 0, ""); // Todo: Proper error handling
+    } else {
+        size = readLittleEndian(dataArray, 8); // ds64
+    }
+
+
     let chunkData = undefined;
     if (readData)
     {
