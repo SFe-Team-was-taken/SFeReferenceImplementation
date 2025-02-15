@@ -188,9 +188,9 @@ export class SoundFont2 extends BasicSoundFont
                                     throw new SyntaxError(`Unsupported SFe version found: SFe "${sfeVerMaj}"`);
                                 }
                                 let sfeVerMin = readLittleEndian(nestedChunk.chunkData, 2);
-                                if (sfeVerMaj > 0) { // To do: add a global variable declaring the highest supported internal SFe version number.
+                                if (sfeVerMin > 0) { // To do: add a global variable declaring the highest supported internal SFe version number.
                                     SpessaSynthGroupEnd();
-                                    throw new SyntaxError(`Unsupported SFe version found: SFe "${sfeVerMaj}"."${sfeVerMin}"`);
+                                    throw new SyntaxError(`Unsupported SFe version found: SFe "${sfeVerMaj}.${sfeVerMin}"`);
                                 }
                                 let sfeSpecType = readBytesAsString(nestedChunk.chunkData, 20, undefined, false);
                                 if (sfeSpecType !== "Final") {
