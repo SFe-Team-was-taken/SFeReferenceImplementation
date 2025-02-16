@@ -42,7 +42,7 @@ Some of the numbers may be arbitrary.
     - Flag comparison code not yet started
     - Feature flag detection code should be extensible so it is easy to add new feature branches
 - [ ] 5.7.1 smpl sub-chunk: Not started
-    - Big endian support for RIFX.
+    - Big endian support for RIFX, SpessaSynth already has big endian functions.
     - SpessaSynth does not require the 46 zero-valued samples, but adds the 46 samples on write.
     - Not done immediately, because big-endian support is not a priority
 - [ ] 5.7.3 24 and 32-bit samples: Not started

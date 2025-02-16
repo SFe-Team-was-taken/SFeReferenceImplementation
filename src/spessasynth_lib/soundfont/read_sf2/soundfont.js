@@ -8,7 +8,7 @@ import { readInstruments } from "./instruments.js";
 import { readModulators } from "./modulators.js";
 import { readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { consoleColors } from "../../utils/other.js";
-import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthLogging } from "../../utils/loggin.js";
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthLogging, SpessaSynthWarn } from "../../utils/loggin.js";
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { BasicSoundFont } from "../basic_soundfont/basic_soundfont.js";
@@ -70,7 +70,7 @@ export class SoundFont2 extends BasicSoundFont
             throw new SyntaxError(`Invalid soundFont! Expected "sfbk", "sfpk" or "sfen" got "${type}"`);
         } else if (type === "sfen") {
             SpessaSynthGroupEnd();
-            console.warn(`Main chunk "sfen" found. The file may be incompatible with SpessaSynth.`)
+            SpessaSynthWarn(`Main chunk "sfen" found. The file may be incompatible with SpessaSynth.`)
         }
 
         if (isSFe64)
@@ -122,7 +122,7 @@ export class SoundFont2 extends BasicSoundFont
                         } else {
                             bank_format = "Unknown";
                             infoValid = true;
-                            console.warn("Unrecognised ifil version");
+                            SpessaSynthWarn("Unrecognised ifil version");
                         }
                         break;
                 case "iver":
@@ -166,7 +166,7 @@ export class SoundFont2 extends BasicSoundFont
                                 )
                                 infoValid = true;
                             } else {
-                                console.warn("ISFe sub-chunk detected, but ifil version corresponds to soundfont2.")
+                                SpessaSynthWarn("ISFe sub-chunk detected, but ifil version corresponds to soundfont2.")
                             }
                         default:
                             ;     
@@ -207,7 +207,7 @@ export class SoundFont2 extends BasicSoundFont
                                 }
                                 let sfeSpecType = readBytesAsString(nestedChunk.chunkData, 20, undefined, false);
                                 if (sfeSpecType !== "Final") {
-                                    console.warn("This SFe file was written to a draft specification.");
+                                    SpessaSynthWarn("This SFe file was written to a draft specification.");
                                 }
                                 let sfeDraft = readLittleEndian(nestedChunk.chunkData, 2);
                                 let sfeVerStr = readBytesAsString(nestedChunk.chunkData, 20, undefined, false);
