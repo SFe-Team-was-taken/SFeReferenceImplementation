@@ -239,7 +239,7 @@ class BasicSoundFont
     }
     
     /**
-     * Get the appropriate preset, undefined if not foun d
+     * Get the appropriate preset, undefined if not found
      * @param bankNr {number}
      * @param programNr {number}
      * @param fallbackToProgram {boolean} if true, if no exact match is found, will use any bank with the given preset

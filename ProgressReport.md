@@ -2,16 +2,17 @@
 
 Some of the numbers may be arbitrary.
 
-### Total progress: 19%
+### Total progress: 25%
 
 ### Section 5
 
 - [x] 5.1 File format extensions
     - SpessaSynth now accepts .sf4.
-- [ ] 5.2 RIFF-type format structures: 70% complete
-    - RIFX not supported
-    - Handles ds64 properly
-    - Uses a separate function for RIFF64
+- [ ] 5.2 RIFF-type format structures: 80% complete
+    - Recognises RIFX and gives an error due to not full support.
+    - Should now be able to read RIFX chunks (big-endian).
+    - Writing RIFX not yet supported, but RIFX not used very much at all?
+    - Handles ds64 properly when using a RIFF64-specific chunk load function.
     - Todo: merge RIFF/RIFF64/RIFX/RIFD functions into one function
 - [ ] 5.3 Chunk header types: 40% complete
     - Detects `sfen` header and gives warning ("stub"), because 64-bit headers aren't yet supported.
@@ -19,21 +20,21 @@ Some of the numbers may be arbitrary.
     - RIFX not immediately supported
 - [ ] 5.5.4 String encoding: Not started
     - UTF-8 is not usable in `ICMT`.
+    - Need to make UTF-8 decoder.
 - [x] 5.6.1 ifil handling
-    - Can detect a value of 1024 or above.
-    - ISFe-list handling not started yet.
 - [ ] 5.6.4 isng handling: Not started
     - SpessaSynth does not currently use the `isng` value.
     - This would be used to enable/disable the LSB handler/SpessaSynth's "quirks mode".
-- [ ] 5.6.6 ICRD handling: Not started
-    - Need to write ISO8601 handler
-    - Output would be included in the `soundFontInfo` array, for example `soundFontInfo[ICRD.year]`, etc.
+    - The automatic soundfont creator has been updated to make SFe banks.
+- [x] 5.6.6 ICRD handling
 - [ ] 5.6.7 Other sub-chunks: Not started
     - SpessaSynth is already unaffected by the length limits.
     - This is basically just adding UTF-8 support to these fields.
+    - Requires the UTF-8 decoder, which will be started later.
 - [ ] 5.6.9 SFty sub-chunk: 50% complete
     - Detects banks that use 8-bit samples or TSC and gives error if found 
     - TSC and 8-bit not supported immediately
+    - No need for TSC in initial implementation, would require rewrite of soundfont.js.
 - [x] 5.6.10 SFvx sub-chunk
     - Includes error handling for unsupported versions
     - Warns user if file written to draft specification
@@ -45,9 +46,9 @@ Some of the numbers may be arbitrary.
     - Big endian support for RIFX, SpessaSynth already has big endian functions.
     - SpessaSynth does not require the 46 zero-valued samples, but adds the 46 samples on write.
     - Not done immediately, because big-endian support is not a priority
-- [ ] 5.7.3 24 and 32-bit samples: Not started
-    - SpessaSynth does not support 24-bit samples
-    - This isn't done immediately
+- [ ] 5.7.3 24 and 32-bit samples: 30% complete
+    - 24-bit and 32-bit sample data is now read but not processed yet
+    - Limited loading of 8-bit samples implemented
 - [ ] 5.7.4 8-bit samples: Not started
     - Not done immediately
 - [ ] 5.8.2 Bank select LSB: 50% complete
@@ -57,7 +58,7 @@ Some of the numbers may be arbitrary.
     - Base preset fallback does not yet work properly for LSB values.
     - In the channel list, the bank value is still unified.
     - Todo: Reimplement "XG hacks" for SF2.0x banks as part of "quirks mode".  
-    - Todo: Change wBank in code to byBankMSB and byBankLSB.
+    - Todo: Change `wBank` in code to `byBankMSB` and `byBankLSB`.
     - Todo: Change handling of percussion to use byte eight instead of hardcoded "128".
 - [ ] 5.8.5 UTF-8 in sdta: Not started
     - Not started

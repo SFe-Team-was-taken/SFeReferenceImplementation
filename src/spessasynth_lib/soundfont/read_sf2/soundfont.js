@@ -49,6 +49,9 @@ export class SoundFont2 extends BasicSoundFont
         {
             SpessaSynthGroupEnd();
             this.parsingError(`Invalid chunk header! Expected "RIFF" or "RF64" got "${chunk.header.toLowerCase()}"`);
+        } else if (firstChunk.header.toLowerCase() === "rifx") {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError("Big-endian SFe banks are not yet supported.");
         }
         
         const type = readBytesAsString(this.dataArray, 4).toLowerCase();
@@ -69,8 +72,9 @@ export class SoundFont2 extends BasicSoundFont
             SpessaSynthGroupEnd();
             throw new SyntaxError(`Invalid soundFont! Expected "sfbk", "sfpk" or "sfen" got "${type}"`);
         } else if (type === "sfen") {
-            SpessaSynthGroupEnd();
-            SpessaSynthWarn(`Main chunk "sfen" found. The file may be incompatible with SpessaSynth.`)
+            SpessaSynthWarn(`Main chunk "sfen" found. The file may be incompatible with SpessaSynth.`);
+        } else if (type === "sfbk" && firstChunk.header.toLowerCase() === "rf64") {
+            SpessaSynthWarn(`Main chunk must be "sfen" when 64-bit chunk headers are in use.`);
         }
 
         if (isSFe64)
@@ -94,6 +98,8 @@ export class SoundFont2 extends BasicSoundFont
             let chunk = readRIFFChunk(infoChunk.chunkData);
             let verMaj;
             let verMin;
+            let date_value;
+            let time_value;
 
             // special cases
             switch (chunk.header.toLowerCase())
@@ -124,6 +130,12 @@ export class SoundFont2 extends BasicSoundFont
                             infoValid = true;
                             SpessaSynthWarn("Unrecognised ifil version");
                         }
+                        this.soundFontInfo["BankFormat"] = bank_format;
+                        SpessaSynthInfo(
+                            `%c"${"BankFormat"}": %c"${bank_format}"`,
+                            consoleColors.info,
+                            consoleColors.recognized
+                        );
                         break;
                 case "iver":
                     verMaj = readLittleEndian(chunk.chunkData, 2);
@@ -131,6 +143,45 @@ export class SoundFont2 extends BasicSoundFont
                     this.soundFontInfo[chunk.header + `.verMaj`] = verMaj;
                     this.soundFontInfo[chunk.header + `.verMin`] = verMin;
                     break;
+                case "icrd":
+                    let testChar;
+                    if (chunk.size == 12 || chunk.size == 22)
+                    {
+                        let year = readBytesAsString(chunk.chunkData, 4, undefined, false); // yyyy 
+                        testChar = readBytesAsString(chunk.chunkData, 1, undefined, false); // "-"
+                        this.verifyTextWarn(testChar, '-'); 
+                        let month = readBytesAsString(chunk.chunkData, 2, undefined, false); // mm 
+                        testChar = readBytesAsString(chunk.chunkData, 1, undefined, false); // "-"
+                        this.verifyTextWarn(testChar, '-'); 
+                        let day = readBytesAsString(chunk.chunkData, 2, undefined, false); // dd 
+                        date_value = `${year}-${month}-${day}`
+
+                        this.soundFontInfo[chunk.header + `.date`] = date_value;
+                        if (chunk.size == 22)
+                        {
+                            testChar = readBytesAsString(chunk.chunkData, 1, undefined, false); // "T"
+                            this.verifyTextWarn(testChar, 'T'); 
+                            let hour = readBytesAsString(chunk.chunkData, 2, undefined, false); // hh 
+                            testChar = readBytesAsString(chunk.chunkData, 1, undefined, false); // ":"
+                            this.verifyTextWarn(testChar, ':'); 
+                            let minute = readBytesAsString(chunk.chunkData, 2, undefined, false); // mm
+                            testChar = readBytesAsString(chunk.chunkData, 1, undefined, false); // ":"
+                            this.verifyTextWarn(testChar, ':'); 
+                            let second = readBytesAsString(chunk.chunkData, 2, undefined, false); // ss
+                            readBytesAsString(chunk.chunkData, 1, undefined, false); // optional letter
+                            time_value = `${hour}:${minute}:${second}`
+
+                            this.soundFontInfo[chunk.header + `.time`] = time_value;
+                        } else {
+                            SpessaSynthInfo("Date-only icrd, assuming midnight for time");
+                            this.soundFontInfo[chunk.header + `.time`] = "00:00:00";
+                        }
+                    } else {
+                        text = readBytesAsString(chunk.chunkData, chunk.chunkData.length, undefined, false);
+                        SpessaSynthWarn(`icrd not in ISO 8601 format: "${text}"`)
+                        // Todo: Proper error handling
+                    }
+
                 case "icmt":
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length, undefined, false);
                     this.soundFontInfo[chunk.header] = text;
@@ -189,6 +240,10 @@ export class SoundFont2 extends BasicSoundFont
                                         consoleColors.info,
                                         consoleColors.recognized
                                     );
+                                } else if (text === "SFe-static (8-bit)") 
+                                {
+                                    SpessaSynthGroupEnd();
+                                    throw new SyntaxError(`8-bit sample mode is currently unsupported.`);
                                 } else {
                                     SpessaSynthGroupEnd();
                                     throw new SyntaxError(`Unsupported SFe bank type: "${text}"`);
@@ -269,6 +324,7 @@ export class SoundFont2 extends BasicSoundFont
                                 );
                         }
                     }
+                    break;
                 default:
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
                     this.soundFontInfo[chunk.header] = text;
@@ -288,6 +344,17 @@ export class SoundFont2 extends BasicSoundFont
                         consoleColors.recognized
                     );
                     break;
+                case "icrd":
+                    SpessaSynthInfo(
+                        `%c"${chunk.header + `.date`}": %c"${date_value}"`,
+                        consoleColors.info,
+                        consoleColors.recognized
+                    );
+                    SpessaSynthInfo(
+                        `%c"${chunk.header + `.time`}": %c"${time_value}"`,
+                        consoleColors.info,
+                        consoleColors.recognized
+                    );
                 case "list":
                     break;
                 default:
@@ -311,9 +378,15 @@ export class SoundFont2 extends BasicSoundFont
         this.verifyText(readBytesAsString(this.dataArray, 4), "sdta");
         
         // smpl
-        SpessaSynthInfo("%cVerifying smpl chunk...", consoleColors.warn);
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
-        this.verifyHeader(sampleDataChunk, "smpl");
+        if (this.soundFontInfo["ISFe.SFty"] == `SFe-static (8-bit)`)
+        {
+            SpessaSynthInfo("%c8-bit sample mode activated, ignoring smpl chunk...", consoleColors.warn);
+        } else {
+            SpessaSynthInfo("%cVerifying smpl chunk...", consoleColors.warn);
+            this.verifyHeader(sampleDataChunk, "smpl");
+        }
+
         /**
          * @type {IndexedByteArray|Float32Array}
          */
@@ -332,7 +405,7 @@ export class SoundFont2 extends BasicSoundFont
                  */
                 sampleData = stbvorbis.decode(this.dataArray.buffer.slice(
                     this.dataArray.currentIndex,
-                    this.dataArray.currentIndex + sdtaChunk.size - 12
+                    this.dataArray.currentIndex + sampleDataChunk.size
                 )).data[0];
             }
             catch (e)
@@ -356,12 +429,92 @@ export class SoundFont2 extends BasicSoundFont
         }
         
         SpessaSynthInfo(
-            `%cSkipping sample chunk, length: %c${sdtaChunk.size - 12}`,
+            `%cSkipping sample chunk, length: %c${sampleDataChunk.size}`,
             consoleColors.info,
             consoleColors.value
         );
-        this.dataArray.currentIndex += sdtaChunk.size - 12;
+        this.dataArray.currentIndex += sampleDataChunk.size;
         
+        console.log(sdtaChunk.size - sampleDataChunk.size);
+
+        if ((sdtaChunk.size - sampleDataChunk.size) > 12) // Other chunks found
+        {
+            // sm24
+            // This code could probably be way more elegant, but for now let's make something that works.
+            let sample24DataChunk = readRIFFChunk(this.dataArray, false);
+            if (sample24DataChunk.header === "sm24")
+            {
+                if ((this.soundFontInfo["ifil.verMaj"] == 2 && this.soundFontInfo["ifil.verMin"] <= 1) || this.soundFontInfo["ifil.verMaj"] == 3) // Mixed compressed/non-compressed 24-bit samples are not supported for now.
+                {
+                    SpessaSynthInfo(
+                        `%cifil value does not support 24-bit samples, ignoring sm24 chunk...`,
+                        consoleColors.info,
+                        consoleColors.value
+                    );
+                } else {
+                    /**
+                     * @type {IndexedByteArray}
+                     */
+                    let sample24Data = this.dataArray;
+                    this.sample24DataStartIndex = this.dataArray.currentIndex;
+                    SpessaSynthInfo(
+                        `%cSkipping 24-bit sample chunk, length: %c${sample24DataChunk.size}`,
+                        consoleColors.info,
+                        consoleColors.value
+                    );
+                    this.dataArray.currentIndex += sample24DataChunk.size;
+                }
+            } else if (sample24DataChunk.header === "sm32") // For now, the sm32 chunk must be after the sm24 chunk. 
+            {
+                SpessaSynthWarn(
+                    `%csm32 chunk found, ignoring."`,
+                    consoleColors.info,
+                    consoleColors.value
+                );
+            } else {
+                SpessaSynthWarn(
+                    `%cUnrecognised chunk: "${sample24DataChunk.header}"`,
+                    consoleColors.info,
+                    consoleColors.value
+                );
+            }
+            if ((sdtaChunk.size - sampleDataChunk.size - sample24DataChunk.size) > 20)
+            {
+                // sm32
+                // There must not be an unknown chunk between sm24 and sm32. 
+                let sample32DataChunk = readRIFFChunk(this.dataArray, false);
+                if (sample32DataChunk.header === "sm32")
+                {
+                    if (this.soundFontInfo["ifil.verMaj"] <= 3)
+                    {
+                        SpessaSynthInfo(
+                            `%cifil value does not support 32-bit samples, ignoring sm32 chunk...`,
+                            consoleColors.info,
+                            consoleColors.value
+                        );
+                    } else {
+                        /**
+                         * @type {IndexedByteArray}
+                         */
+                        let sample32Data = this.dataArray;
+                        this.sample32DataStartIndex = this.dataArray.currentIndex;
+                        SpessaSynthInfo(
+                            `%cSkipping sample chunk, length: %c${sample32DataChunk.size}`,
+                            consoleColors.info,
+                            consoleColors.value
+                        );
+                        this.dataArray.currentIndex += sample32DataChunk.size;
+                    }
+                } else {
+                    SpessaSynthWarn(
+                        `%cUnrecognised chunk: "${sample32DataChunk.header}"`,
+                        consoleColors.info,
+                        consoleColors.value
+                    );
+                }
+            }
+        } 
+
         // PDTA
         SpessaSynthInfo("%cLoading preset data chunk...", consoleColors.warn);
         let presetChunk = readRIFFChunk(this.dataArray);
@@ -401,7 +554,7 @@ export class SoundFont2 extends BasicSoundFont
          * (the current index points to start of the smpl read)
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex;
-        this.samples.push(...readSamples(presetSamplesChunk, sampleData, !isSF2Pack));
+        this.samples.push(...readSamples(presetSamplesChunk, sampleData, !isSF2Pack, 16));
         
         /**
          * read all the instrument generators
@@ -492,6 +645,18 @@ export class SoundFont2 extends BasicSoundFont
         }
     }
     
+    /**
+     * @param text {string}
+     * @param expected {string}
+     */
+    verifyTextWarn(text, expected)
+    {
+        if (text.toLowerCase() !== expected.toLowerCase())
+        {
+            SpessaSynthWarn(`Unexpected text: expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"\``);
+        }
+    }
+
     destroySoundfont()
     {
         super.destroySoundfont();

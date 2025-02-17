@@ -23,6 +23,7 @@ export class LoadedSample extends BasicSample
      * @param smplArr {IndexedByteArray|Float32Array}
      * @param sampleIndex {number} initial sample index when loading the sfont
      * @param isDataRaw {boolean} if false, the data is decoded as float32.
+     * @param sampleBitDepth {number} bit depth of sample, by default 16 bits.
      * Used for SF2Pack support
      */
     constructor(sampleName,
@@ -37,7 +38,8 @@ export class LoadedSample extends BasicSample
                 sampleType,
                 smplArr,
                 sampleIndex,
-                isDataRaw
+                isDataRaw,
+                sampleBitDepth
     )
     {
         super(
@@ -68,6 +70,11 @@ export class LoadedSample extends BasicSample
             this.sampleLength = 99999999; // set to 999999 before we decode it
         }
         this.isDataRaw = isDataRaw;
+        this.sampleBitDepth = sampleBitDepth; // For now, this is unused.
+        if (this.isCompressed)
+        {
+            this.sampleBitDepth = 16;
+        }
     }
     
     /**
@@ -154,9 +161,9 @@ export class LoadedSample extends BasicSample
             }
             else if (!this.isDataRaw)
             {
-                return this.getUncompressedReadyData();
+                return this.getUncompressedReadyData(this.sampleBitDepth);
             }
-            return this.loadUncompressedData();
+            return this.loadUncompressedData(this.sampleBitDepth);
         }
         return this.sampleData;
     }
@@ -164,7 +171,7 @@ export class LoadedSample extends BasicSample
     /**
      * @returns {Float32Array}
      */
-    loadUncompressedData()
+    loadUncompressedData(bitDepth = 16)
     {
         if (this.isCompressed)
         {
@@ -212,9 +219,10 @@ export class LoadedSample extends BasicSample
  * @param sampleHeadersChunk {RiffChunk}
  * @param smplChunkData {IndexedByteArray|Float32Array}
  * @param isSmplDataRaw {boolean}
+ * @param bitDepth {number} sample bit depth
  * @returns {LoadedSample[]}
  */
-export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = true)
+export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = true, bitDepth)
 {
     /**
      * @type {LoadedSample[]}
@@ -223,7 +231,7 @@ export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = t
     let index = 0;
     while (sampleHeadersChunk.chunkData.length > sampleHeadersChunk.chunkData.currentIndex)
     {
-        const sample = readSample(index, sampleHeadersChunk.chunkData, smplChunkData, isSmplDataRaw);
+        const sample = readSample(index, sampleHeadersChunk.chunkData, smplChunkData, isSmplDataRaw, bitDepth);
         samples.push(sample);
         index++;
     }
@@ -241,9 +249,10 @@ export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = t
  * @param sampleHeaderData {IndexedByteArray}
  * @param smplArrayData {IndexedByteArray|Float32Array}
  * @param isDataRaw {boolean} true means binary 16 bit data, false means float32
+ * @param sampleBitDepth {number} sample bit depth
  * @returns {LoadedSample}
  */
-function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
+function readSample(index, sampleHeaderData, smplArrayData, isDataRaw, sampleBitDepth)
 {
     
     // read the sample name
@@ -272,7 +281,7 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
         samplePitch = 60;
     }
     
-    // readt the sample pitch correction
+    // read the sample pitch correction
     let samplePitchCorrection = signedInt8(sampleHeaderData[sampleHeaderData.currentIndex++]);
     
     
@@ -294,6 +303,7 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
         sampleType,
         smplArrayData,
         index,
-        isDataRaw
+        isDataRaw,
+        sampleBitDepth
     );
 }

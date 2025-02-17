@@ -1,5 +1,6 @@
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 import { readLittleEndian, writeDword } from "../../utils/byte_functions/little_endian.js";
+import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
 import { readBytesAsString, writeStringAsBytes } from "../../utils/byte_functions/string.js";
 
 /**
@@ -36,6 +37,38 @@ export function readRIFFChunk(dataArray, readData = true, forceShift = false)
     let header = readBytesAsString(dataArray, 4);
 
     let size = readLittleEndian(dataArray, 4);
+    let chunkData = undefined;
+    if (readData)
+    {
+        chunkData = new IndexedByteArray(dataArray.buffer.slice(dataArray.currentIndex, dataArray.currentIndex + size));
+    }
+    if (readData || forceShift)
+    {
+        dataArray.currentIndex += size;
+    }
+    
+    if (size % 2 !== 0)
+    {
+        if (dataArray[dataArray.currentIndex] === 0)
+        {
+            dataArray.currentIndex++;
+        }
+    }
+    
+    return new RiffChunk(header, size, chunkData);
+}
+
+/**
+ * @param dataArray {IndexedByteArray}
+ * @param readData {boolean}
+ * @param forceShift {boolean}
+ * @returns {RiffChunk}
+ */
+export function readRIFXChunk(dataArray, readData = true, forceShift = false)
+{
+    let header = readBytesAsString(dataArray, 4);
+
+    let size = readBytesAsUintBigEndian(dataArray, 4);
     let chunkData = undefined;
     if (readData)
     {

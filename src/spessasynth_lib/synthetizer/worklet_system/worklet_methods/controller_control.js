@@ -84,8 +84,9 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         return;
                     
                     case "xg":
-                        // for xg, if msb is 120, 126 or 127, then it's drums
-                        if (bankNr === 120 || bankNr === 126 || bankNr === 127)
+                        // for xg, if msb is 126 or 127, then it's drums
+                        // some xg hacks use msb of 120, this is handled in preset search function
+                        if (bankNr === 126 || bankNr === 127)
                         {
                             this.setDrums(channel, true);
                         }
@@ -122,6 +123,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             break;
         
         case midiControllers.lsbForControl0BankSelect:
+            // lsb hacks are handled in the preset search function when a bank select command is received
             let bankLsb = controllerValue;
             setBankSelectLSB(channelObject, bankLsb);
             break;
