@@ -2,22 +2,18 @@
 
 Some of the numbers may be arbitrary.
 
-### Total progress: 25%
+### Total progress: 33%
 
 ### Section 5
 
 - [x] 5.1 File format extensions
     - SpessaSynth now accepts .sf4.
-- [ ] 5.2 RIFF-type format structures: 80% complete
-    - Recognises RIFX and gives an error due to not full support.
-    - Should now be able to read RIFX chunks (big-endian).
-    - Writing RIFX not yet supported, but RIFX not used very much at all?
+- [x] 5.2 RIFF-type format structures
     - Handles ds64 properly when using a RIFF64-specific chunk load function.
-    - Todo: merge RIFF/RIFF64/RIFX/RIFD functions into one function
-- [ ] 5.3 Chunk header types: 40% complete
-    - Detects `sfen` header and gives warning ("stub"), because 64-bit headers aren't yet supported.
+    - Todo: merge RIFF/RIFF64/RIFD functions into one function
+- [ ] 5.3 Chunk header types: 90% complete
+    - Detects `sfen` header and gives warning ("stub").
     - Can read structure of 64-bit static but not yet tested with large >4GB files, should work? 
-    - RIFX not immediately supported
 - [ ] 5.5.4 String encoding: Not started
     - UTF-8 is not usable in `ICMT`.
     - Need to make UTF-8 decoder.
@@ -42,10 +38,8 @@ Some of the numbers may be arbitrary.
     - Outputs an array containing the feature flags
     - Flag comparison code not yet started
     - Feature flag detection code should be extensible so it is easy to add new feature branches
-- [ ] 5.7.1 smpl sub-chunk: Not started
-    - Big endian support for RIFX, SpessaSynth already has big endian functions.
-    - SpessaSynth does not require the 46 zero-valued samples, but adds the 46 samples on write.
-    - Not done immediately, because big-endian support is not a priority
+- [x] 5.7.1 smpl sub-chunk
+    - Because everything is little endian, nothing needs to change!
 - [ ] 5.7.3 24 and 32-bit samples: 30% complete
     - 24-bit and 32-bit sample data is now read but not processed yet
     - Limited loading of 8-bit samples implemented
@@ -106,7 +100,3 @@ Some of the numbers may be arbitrary.
     - 64bit not supported yet
 - [ ] 11.3.2 64bit-to-32bit: Not started
     - 64bit not supported yet
-- [ ] 11.3.3 32bit-to-RIFX: Not started
-    - Might not be necessary(?)
-    - Despite being the case, it would be as simple as byteswapping everything to big-endian.
-    - Is it necessary to byteswap the samples to big-endian as well?
