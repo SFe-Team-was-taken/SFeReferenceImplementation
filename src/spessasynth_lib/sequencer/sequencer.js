@@ -149,12 +149,12 @@ export class Sequencer
          * @type {boolean}
          * @private
          */
-        this._skipToFirstNoteOn = options?.skipToFirstNoteOn || true;
+        this._skipToFirstNoteOn = options?.skipToFirstNoteOn ?? true;
         /**
          * @type {boolean}
          * @private
          */
-        this._preservePlaybackState = options?.preservePlaybackState || false;
+        this._preservePlaybackState = options?.preservePlaybackState ?? false;
         
         if (this._skipToFirstNoteOn === false)
         {
@@ -167,7 +167,7 @@ export class Sequencer
             this._sendMessage(WorkletSequencerMessageType.setPreservePlaybackState, true);
         }
         
-        this.loadNewSongList(midiBinaries, options?.autoPlay || true);
+        this.loadNewSongList(midiBinaries, options?.autoPlay ?? true);
         
         window.addEventListener("beforeunload", this.resetMIDIOut.bind(this));
     }
