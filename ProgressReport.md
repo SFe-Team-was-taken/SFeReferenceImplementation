@@ -2,7 +2,7 @@
 
 Some of the numbers may be arbitrary.
 
-### Total progress: 33%
+### Total progress: 40%
 
 ### Section 5
 
@@ -75,18 +75,7 @@ Some of the numbers may be arbitrary.
     - These are ignored already.
 - [x] 8.6 Unknown enums
     - These are ignored already.
-
-### Section 9
-
-- [ ] 9.2 SiliconSFe headers: Not started
-    - This isn't done immediately
-    - Cacodemon feedback suggests that this can wait quite a bit.
-- [ ] 9.3 AWE ROM emulator: Not started
-    - This isn't done immediately
-    - We need examples of old SF2.0x banks that used ROM samples.
-    - Once that is done, we can test the AWE ROM emulator.
-    - Reference implementation samples are already available!
-
+    
 ### Section 11
 
 - [ ] 11.2.1 SF2-to-SFe: Not started
