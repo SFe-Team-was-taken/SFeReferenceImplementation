@@ -14,5 +14,6 @@
   "dependencies": {
     "spessasynth_core": "latest",
     "spessasynth_lib": "latest"
+    "build": "^0.1.4",
   }
 }
