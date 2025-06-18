@@ -11,14 +11,20 @@ const EXPONENTIAL_AGGRESSIVE = 3;
  * @param waveHeight {number}
  * @param waveWidth {number}
  * @param forceStraightLine {boolean}
+ * @param filled {boolean} filled waveform mode
  */
-export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth, waveHeight)
+export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth, waveHeight, filled = false)
 {
     const x = channelNumber % 4;
     const y = Math.floor(channelNumber / 4);
     const analyser = this.channelAnalysers[channelNumber];
     const straightLine = () =>
     {
+        if (filled)
+        {
+            // no straight line for the filled mode
+            return;
+        }
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4;
         const relativeX = waveWidth * x;
@@ -52,16 +58,23 @@ export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth
     // draw
     this.drawingContext.lineWidth = this.lineThickness;
     this.drawingContext.strokeStyle = this.plainColors[channelNumber];
-    this.drawingContext.beginPath();
+    this.drawingContext.fillStyle = this.plainColors[channelNumber];
+    
+    
+    let triggerPoint = 0;
+    let length = waveform.length;
+    let renderStart = 0;
+    let renderEnd = waveform.length;
     if (this._stabilizeWaveforms)
     {
-        let length = waveform.length / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
-        const step = waveWidth / length;
-        
-        // Oscilloscope triggering
+        // fraction length
+        length = waveform.length / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
+        if (this.synth.channelProperties[channelNumber].isDrum)
+        {
+            length *= 2;
+        }
         const halfLength = Math.floor(length / 2);
-        // start searching from half the length
-        let triggerPoint = waveform.length - halfLength;
+        triggerPoint = waveform.length - halfLength;
         for (let i = triggerPoint; i >= 1; i--)
         {
             if (waveform[i - 1] < 0 && waveform[i] >= 0)
@@ -70,9 +83,20 @@ export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth
                 break;
             }
         }
+        renderStart = Math.max(0, triggerPoint - halfLength);
+        renderEnd = Math.min(triggerPoint + halfLength, waveform.length);
+    }
+    
+    
+    const dataLength = renderEnd - renderStart;
+    const samplesPerPixel = dataLength / waveWidth;
+    
+    if (filled)
+    {
+        const step = waveWidth / length;
         let xPos = relativeX;
-        const renderStart = triggerPoint - halfLength;
-        const renderEnd = triggerPoint + halfLength;
+        this.drawingContext.beginPath();
+        this.drawingContext.moveTo(relativeX, relativeY);
         for (let i = renderStart; i < renderEnd; i++)
         {
             this.drawingContext.lineTo(
@@ -81,23 +105,59 @@ export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth
             );
             xPos += step;
         }
+        this.drawingContext.lineTo(xPos, relativeY);
+        this.drawingContext.fill();
     }
     else
     {
-        const step = waveWidth / waveform.length;
-        
-        let xPos = relativeX;
-        for (let i = 0; i < waveform.length; i++)
+        this.drawingContext.beginPath();
+        if (samplesPerPixel >= 2)
         {
-            this.drawingContext.lineTo(
-                xPos,
-                relativeY + waveform[i] * multiplier
-            );
-            xPos += step;
+            for (let x = 0; x < waveWidth; x++)
+            {
+                const start = Math.floor(x * samplesPerPixel + renderStart);
+                const end = Math.min(Math.floor(start + samplesPerPixel), renderEnd);
+                
+                let min = 1;
+                let max = -1;
+                
+                for (let i = start; i < end; i++)
+                {
+                    const value = waveform[i];
+                    if (value < min)
+                    {
+                        min = value;
+                    }
+                    if (value > max)
+                    {
+                        max = value;
+                    }
+                }
+                
+                const yMin = min * multiplier + relativeY;
+                const yMax = max * multiplier + relativeY;
+                const xFinal = x + relativeX;
+                this.drawingContext.lineTo(xFinal, yMin);
+                this.drawingContext.lineTo(xFinal, yMax);
+            }
         }
+        else
+        {
+            const step = waveWidth / length;
+            let xPos = relativeX;
+            for (let i = renderStart; i < renderEnd; i++)
+            {
+                this.drawingContext.lineTo(
+                    xPos,
+                    relativeY + waveform[i] * multiplier
+                );
+                xPos += step;
+            }
+        }
+        this.drawingContext.stroke();
     }
     
-    this.drawingContext.stroke();
+    
 }
 
 /**
@@ -258,6 +318,7 @@ export function renderSingleFft(channelNumber, waveWidth, waveHeight)
 
 /**
  * @this {Renderer}
+ * @param forceStraightLine {boolean}
  */
 export function renderWaveforms(forceStraightLine = false)
 {
@@ -268,10 +329,17 @@ export function renderWaveforms(forceStraightLine = false)
         default:
             break;
         
+        case rendererModes.filledWaveformsMode:
         case rendererModes.waveformsMode:
             for (let i = 0; i < this.channelAnalysers.length; i++)
             {
-                this.renderSingleWaveform(i, forceStraightLine, waveWidth, waveHeight);
+                this.renderSingleWaveform(
+                    i,
+                    forceStraightLine,
+                    waveWidth,
+                    waveHeight,
+                    this.rendererMode === rendererModes.filledWaveformsMode
+                );
             }
             break;
         
