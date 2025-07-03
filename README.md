@@ -5,12 +5,6 @@
 
 **SpessaSynth** is a SoundFont2-based real-time synthesizer written in vanilla JavaScript.
 
-### The project has been split!
-
-*The library has been split from this repository.
-It only contains the web application now.*
-[Read more here](https://github.com/spessasus/SpessaSynth/wiki/The-Split)
-
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
 <h2 align="center">Made with SpessaSynth</h2>
@@ -18,11 +12,13 @@ It only contains the web application now.*
 <a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
 </p>
 
-### Project index
+**SpessaSynth Project index**
 
-- [spessasynth_core](https://github.com/spessasus/spessasynth_core) - SF2/DLS/MIDI library in JS
+- [spessasynth_core](https://github.com/spessasus/spessasynth_core) - SF2/DLS/MIDI library
 - [spessasynth_lib](https://github.com/spessasus/spessasynth_lib) - spessasynth_core wrapper optimized for browsers and WebAudioAPI
-- SpessaSynth (you are here) - online/local web player/editor application based on spessasynth_core and lib
+- [SpessaSynth](https://github.com/spessasus/SpessaSynth) (you are here) - online/local MIDI player/editor application
+- [SpessaFont](https://github.com/spessasus/SpessaFont) - online SF2/DLS editor
+
 
 <h1 align='center'>Web App / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
@@ -96,20 +92,23 @@ also allowing to use it offline!
 **Local Edition requires Node.js**
 
 #### Windows
-1. Download the code as a ZIP file and extract, or use `git clone https://github.com/spessasus/SpessaSynth`.
+1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
 2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
 3. Double-click `Open SpessaSynth.bat`.
 4. Enjoy!
 
 #### Linux
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/spessasus/SpessaSynth --depth 1
-   cd SpessaSynth
-   npm start
-   ```
+1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
 2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
-3. Enjoy!
+3. `node server/server.js`
+4. Enjoy!
+
+### Building from source
+```shell
+git clone "https://github.com/spessasus/SpessaSynth"
+npm i
+npm run build
+```
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
 
