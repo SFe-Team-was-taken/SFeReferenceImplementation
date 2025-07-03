@@ -1,19 +1,20 @@
 {
   "name": "SpessaSynth",
-  "version": "3.26.9",
+  "version": "3.27.0",
   "type": "module",
   "scripts": {
-    "start": "node src/website/server/server.js",
+    "perms": "chmod +x src/build/*",
+    "start": "src/build/dev_mode.sh",
     "build": "src/build/minify_website.sh",
     "debug": "src/build/enable_debug.sh",
-    "release": "src/build/disable_debug.sh"
+    "release": "src/build/disable_debug.sh",
+    "clean": "rm -rf dist; rm -rf local"
   },
   "devDependencies": {
     "esbuild": "^0.25.2"
   },
   "dependencies": {
-    "build": "^0.1.4",
-    "spessasynth_core": "file:../spessasynth_core",
-    "spessasynth_lib": "file:../spessasynth_lib"
+    "spessasynth_core": "latest",
+    "spessasynth_lib": "latest"
   }
 }
