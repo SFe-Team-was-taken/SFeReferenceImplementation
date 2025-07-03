@@ -1,2 +1,2 @@
 git pull
-node server/server.js
+node src/website/server/server.js

@@ -1,14 +1,12 @@
 {
   "name": "SpessaSynth",
-  "version": "3.27.0",
+  "version": "3.26.9",
   "type": "module",
   "scripts": {
-    "perms": "chmod +x src/build/*",
-    "start": "src/build/dev_mode.sh",
+    "start": "node src/website/server/server.js",
     "build": "src/build/minify_website.sh",
     "debug": "src/build/enable_debug.sh",
-    "release": "src/build/disable_debug.sh",
-    "clean": "rm -rf dist; rm -rf local"
+    "release": "src/build/disable_debug.sh"
   },
   "devDependencies": {
     "esbuild": "^0.25.2"

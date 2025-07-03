@@ -99,7 +99,7 @@ class Manager
         {
             return this.compressionFunction;
         }
-        this.compressionFunction = (await import("../../../externals/encode_vorbis.js")).encodeVorbis;
+        this.compressionFunction = (await import("../../externals/encode_vorbis.js")).encodeVorbis;
         return this.compressionFunction;
     }
     
@@ -165,7 +165,9 @@ class Manager
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-        this.workletPath = "./worklet_processor.min.js";
+        const WORKLET_PATH = "website/minified/worklet_processor.min.js";
+        const prePath = window.isLocalEdition ? "../../" : "../../";
+        this.workletPath = prePath + WORKLET_PATH;
         if (context.audioWorklet)
         {
             await context.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));

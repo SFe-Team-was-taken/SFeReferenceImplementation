@@ -4,7 +4,6 @@
  */
 export const WHATS_NEW = [
     `This menu!`,
-    `SF2/DLS Editor: SpessaFont!`,
     `New demo song: TV WORLD!`,
     `Performance improvements!`,
     `New rendered mode: Filled Waveforms!`,

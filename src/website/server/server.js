@@ -9,12 +9,11 @@ let PORT = 8181;
 const HOST = "0.0.0.0";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.join(path.dirname(__filename), "../../");
 
-export const configPath = path.join(__dirname, "./config.json");
+export const configPath = path.join(__dirname, "/website/server/config.json");
 export const soundfontsPath = path.join(__dirname, "../soundfonts");
 export const packageJSON = path.join(__dirname, "../package.json");
-export const rootFile = path.join(__dirname, "../local-dev/local_edition_index.html");
 
 fs.writeFile(configPath, "{}", { flag: "wx" }, () =>
 {
@@ -25,14 +24,10 @@ const server = http.createServer((req, res) =>
 {
     switch (req.url.split("?")[0])
     {
-        default:
-            serveStaticFile(res, path.join(__dirname, "../local-dev/", req.url));
-            break;
-        
         case "/":
             serveStaticFile(
                 res,
-                rootFile,
+                path.join(__dirname, "website/local_edition_index.html"),
                 "text/html"
             );
             break;
@@ -108,6 +103,9 @@ const server = http.createServer((req, res) =>
         case "/getversion":
             getVersion(res);
             break;
+        
+        default:
+            serveStaticFile(res, path.join(__dirname, req.url));
     }
 });
 
@@ -124,13 +122,13 @@ function tryServer()
         }
         served = true;
         let url = `http://localhost:${PORT}`;
-        console.info(`Running on ${url}. A browser window should open.`);
+        console.log(`Running on ${url}. A browser window should open.`);
         openURL(url);
     }).on("error", e =>
     {
         if (e.code === "EADDRINUSE")
         {
-            console.warn(`Port ${PORT} seems to be occupied, trying a different one...`);
+            console.log(`Port ${PORT} seems to be occupied, trying again...`);
             PORT++;
             tryServer();
         }
